@@ -17,6 +17,12 @@ colors = {
 	'bl': (0.0, 0.0, 0.0),  # Black
 }
 
+def smooth_osc(x):
+	return ((16 * x - 32) * x + 16) * x * x
+
+def smooth_step(x):
+	return (-2 * x + 3) * x * x
+
 #### Screen functions
 
 def gradient_char(value):
@@ -57,7 +63,7 @@ class Timer:
 	def __init__(self):
 		self.start_time = time.time()
 
-	def print(self, message = ''):
+	def print_time(self, message = ''):
 		print(message + str(time.time() - self.start_time))
 
 # 
@@ -369,6 +375,18 @@ def emersons_favorites(name = 'green_stars'):
 			return co
 		return Shader(shape = 'particle streak', param = 10, lifespan = 5, spawn_inter = 0.1, gen_color = gen_color)
 		#return Shader(shape = 'particle streak', param = 10, lifespan = 1, spawn_inter = 0.01, gen_color = gen_color)
+	elif name == 'night_light':
+		def gen_color(seed, age):
+			global warmness
+			global intensity
+			c1 = [0.8 - warmness * 0.2, 0.8, 0.8 + warmness * 0.2]
+			#co = [c1[i] * (0.8 + abs(age - 0.5) * 0.4) * intensity for i in range(3)]
+			co = [c1[i] * (0.8 + smooth_osc(age) * 0.2) * intensity for i in range(3)]
+			return co
+		return Shader(shape = 'whole wave', lifespan = 60, gen_color = gen_color)
+	else:
+		print(f"No such favorite '{name}'")
+		exit()
 
 
 def main():
@@ -379,34 +397,48 @@ def main():
 	#shader = emersons_favorites('rainbow_wave')
 	#shader = emersons_favorites('crazy')
 	#shader = emersons_favorites('green_streaks')
+	shader = emersons_favorites('night_light')
 
 	# Make a custom color based on age (0-1)
 	#   I have a lot of 'preset' ones as comments in there too that you can try out.
 	def gen_color(seed, age):
 		#global colors
-		random.seed(seed)
-		c1 = colors['g']
+		#random.seed(seed)  # Resource heavy
+		#c1 = colors['g']
 		#c2 = colors['r']
 		#co = [c1[i] for i in range(3)]    # Simple color
 		#co = [(0.75 + random.random() / 4      ) for i in range(3)]    # Pastels
 		#co = [(random.random() / 4             ) for i in range(3)]    # Deeps
 		#co = [(c1[i] * age + c2[i] * (-age + 1)) for i in range(3)]    # Fade from c1 to c2
 		#co = [c1[i] * (2 * abs(age - 0.5)      ) for i in range(3)]    # Twinkle
-		co = [c1[i] * (-2 * abs(age - 0.5) + 1 ) for i in range(3)]    # Smooth twinkle :D
+		#co = [c1[i] * (-2 * abs(age - 0.5) + 1 ) for i in range(3)]    # Smooth twinkle :D
 		#co = [c1[i] * (age                     ) for i in range(3)]    # Bubbles
 		#co = [c1[i] * (-1 * age + 1            ) for i in range(3)]    # Rain specks
 		#rainbow = [(-2 * abs(((age + i / 3) % 1) - 0.5) + 1) for i in range(3)]
 		#co = [rainbow[i] * (-2 * abs(age - 0.5) + 1 ) for i in range(3)]
 		#co = rainbow
+		global warmness
+		global intensity
+		c1 = [0.8 - warmness * 0.2, 0.8, 0.8 + warmness * 0.2]
+		#co = [c1[i] * (0.8 + abs(age - 0.5) * 0.4) * intensity for i in range(3)]
+		co = [c1[i] * (0.8 + smooth_osc(age) * 0.2) * intensity for i in range(3)]
 		return co
 
 	# Class where you can make your own shader
-	shader = Shader(shape = 'particle point', lifespan = 5, spawn_inter = 0.04, gen_color = gen_color)
+	#shader = Shader(shape = 'whole wave', lifespan = 60, spawn_inter = 0.04, gen_color = gen_color)
 
 	# Loop to display screen (press q to close it)
 	ret_char = None
 	last_time = time.time()
 	while ret_char != 'q':
+		# Here you can set global variables
+		#   for some shaders to be controlled 'remotely'
+		global warmness
+		global intensity
+		#warmness = abs((time.time() % 5) / 5 * 4 - 2) - 1
+		warmness = 0.5
+		intensity = 0.4
+
 		screen = np.full((64*3, 64*4, 3), 0.1)
 		shader.render(screen)
 		#screen = np.kron(screen, np.ones((2,2,1)))
