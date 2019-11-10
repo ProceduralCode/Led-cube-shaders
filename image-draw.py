@@ -18,18 +18,21 @@
 
 from PIL import Image
 from PIL import ImageDraw
+import numpy as np
+import cv2
 import time
-from rgbmatrix import RGBMatrix, RGBMatrixOptions
 
-# Configuration for the matrix
-options = RGBMatrixOptions()
-options.rows = 64
-options.cols = 128
-options.chain_length = 1
-options.parallel = 3
-options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
+# from rgbmatrix import RGBMatrix, RGBMatrixOptions
 
-matrix = RGBMatrix(options = options)
+# # Configuration for the matrix
+# options = RGBMatrixOptions()
+# options.rows = 64
+# options.cols = 128
+# options.chain_length = 1
+# options.parallel = 3
+# options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
+
+# matrix = RGBMatrix(options = options)
 
 # RGB example w/graphics prims.
 # Note, only "RGB" mode is supported currently.
@@ -41,9 +44,16 @@ draw.line((0, 0, 31, 31), fill=(255, 0, 0))
 draw.line((0, 31, 31, 0), fill=(0, 255, 0))
 
 # Then scroll image across matrix...
-for n in range(-192, 192):  # Start off top-left, move off bottom-right
-    matrix.Clear()
-    matrix.SetImage(image, n, n)
+for n in range(0, 20):  # Start off top-left, move off bottom-right
+    # matrix.Clear()
+    # matrix.SetImage(image, n, n)
+
+    bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+    cv2.imshow("led_matrix", bgr)
+    k = cv2.waitKey(1) & 0xFF
+    if k == 27:
+        break
+
     time.sleep(0.02)
 
-matrix.Clear()
+# matrix.Clear()
