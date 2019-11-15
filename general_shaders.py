@@ -35,6 +35,20 @@ def smooth_step(x):
 #### Screen functions
 
 
+def map_to_cube(screen):
+    """
+    Map a cross-shaped screen to a 2x3 rectangle
+    """
+    out = np.zeros((192, 128, 3))
+    out[0:64, 0:64] = screen[64:128, 0:64]
+    out[0:64, 64:128] = screen[0:64, 64:128]
+    out[64:128, 0:64] = screen[64:128, 64:128]
+    out[64:128, 64:128] = screen[128:192, 64:128]
+    out[128:192, 0:64] = screen[64:128, 128:192]
+    out[128:192, 64:128] = screen[64:128, 192:256]
+
+    return out
+
 def gradient_char(value):
     np.clip(value, 0, 1)
     print(value)
@@ -44,10 +58,13 @@ def gradient_char(value):
 
 def print_screen(screen, method="rgbmatrix", wait_for_key=True, matrix=None):
     if method == "rgbmatrix":
-        image = Image.new("RGB", (192, 128))
-        # TODO: Put the pixels into image
+
+        image = (map_to_cube(screen) * 256).astype(np.uint8)
+        print(image.shape)
+        image = Image.fromarray(image, mode="RGB")
+
         matrix.Clear()
-        matrix.SetImage(image)
+        matrix.SetImage(image, 0, 0)
     elif method == "ascii":
         for row in reversed(screen):
             for val in row:
@@ -473,7 +490,7 @@ def main():
     matrix = RGBMatrix(options = options)
 
 
-    shader = emersons_favorites("night_light")
+    shader = emersons_favorites("green_stars")
 
     # Make a custom color based on age (0-1)
     #   I have a lot of 'preset' ones as comments in there too that you can try out.
