@@ -4,7 +4,10 @@ import time
 import math
 import random
 import numpy as np
-import cv2
+# import cv2
+from PIL import Image
+from PIL import ImageDraw
+
 
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 
@@ -39,7 +42,7 @@ def gradient_char(value):
     return chars[int(value * 6)]
 
 
-def print_screen(screen, method="ascii", wait_for_key=True):
+def print_screen(screen, method="rgbmatrix", wait_for_key=True, matrix=None):
     if method == "rgbmatrix":
         image = Image.new("RGB", (192, 128))
         # TODO: Put the pixels into image
@@ -459,42 +462,28 @@ def emersons_favorites(name="green_stars"):
 
 
 def main():
-    # Shaders I have made (comment one out at a time)
-    # shader = emersons_favorites('green_stars')
-    # shader = emersons_favorites('rainbow_sparkles')
-    # shader = emersons_favorites('rain_drops')
-    # shader = emersons_favorites('rainbow_wave')
-    # shader = emersons_favorites('crazy')
-    # shader = emersons_favorites('green_streaks')
+    # Configuration for the matrix
+    options = RGBMatrixOptions()
+    options.rows = 64
+    options.cols = 128
+    options.chain_length = 1
+    options.parallel = 3
+    options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
+
+    matrix = RGBMatrix(options = options)
+
+
     shader = emersons_favorites("night_light")
 
     # Make a custom color based on age (0-1)
     #   I have a lot of 'preset' ones as comments in there too that you can try out.
     def gen_color(seed, age):
-        # global colors
-        # random.seed(seed)  # Resource heavy
-        # c1 = colors['g']
-        # c2 = colors['r']
-        # co = [c1[i] for i in range(3)]    # Simple color
-        # co = [(0.75 + random.random() / 4      ) for i in range(3)]    # Pastels
-        # co = [(random.random() / 4             ) for i in range(3)]    # Deeps
-        # co = [(c1[i] * age + c2[i] * (-age + 1)) for i in range(3)]    # Fade from c1 to c2
-        # co = [c1[i] * (2 * abs(age - 0.5)      ) for i in range(3)]    # Twinkle
-        # co = [c1[i] * (-2 * abs(age - 0.5) + 1 ) for i in range(3)]    # Smooth twinkle :D
-        # co = [c1[i] * (age                     ) for i in range(3)]    # Bubbles
-        # co = [c1[i] * (-1 * age + 1            ) for i in range(3)]    # Rain specks
-        # rainbow = [(-2 * abs(((age + i / 3) % 1) - 0.5) + 1) for i in range(3)]
-        # co = [rainbow[i] * (-2 * abs(age - 0.5) + 1 ) for i in range(3)]
-        # co = rainbow
         global warmness
         global intensity
         c1 = [0.8 - warmness * 0.2, 0.8, 0.8 + warmness * 0.2]
         # co = [c1[i] * (0.8 + abs(age - 0.5) * 0.4) * intensity for i in range(3)]
         co = [c1[i] * (0.8 + smooth_osc(age) * 0.2) * intensity for i in range(3)]
         return co
-
-    # Class where you can make your own shader
-    # shader = Shader(shape = 'whole wave', lifespan = 60, spawn_inter = 0.04, gen_color = gen_color)
 
     # Loop to display screen (press q to close it)
     ret_char = None
@@ -511,7 +500,7 @@ def main():
         screen = np.full((64 * 3, 64 * 4, 3), 0.1)
         shader.render(screen)
         # screen = np.kron(screen, np.ones((2,2,1)))
-        ret_char = print_screen(screen, method="cv2_window", wait_for_key=False)
+        ret_char = print_screen(screen, wait_for_key=False, matrix=matrix)
 
         print("\r" + str(time.time() - last_time), end="")
         last_time = time.time()
