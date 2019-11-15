@@ -42,9 +42,9 @@ def gradient_char(value):
 def print_screen(screen, method="ascii", wait_for_key=True):
     if method == "rgbmatrix":
         image = Image.new("RGB", (192, 128))
-		# TODO: Put the pixels into image
-		matrix.Clear()
-		matrix.SetImage(image)
+        # TODO: Put the pixels into image
+        matrix.Clear()
+        matrix.SetImage(image)
     elif method == "ascii":
         for row in reversed(screen):
             for val in row:
@@ -83,19 +83,19 @@ class Timer:
 #
 class Shader:
     """Main class where I put all the visual generating stuff in.
-	An instance of it is one specific pattern.
-	shape - a string that gives information on which pattern to run
-	  It can contain multiple words
-	param - a general-use variable to pass in a value for one of the shapes
-	lifespan - For particle shapes, it's how long each particle will exist
-	  For whole shapes, it's how long a cycle is
-	spawn_inter - Time between each spawn of a particle
-	  (accounts for delay between calls)
-	gen_color - A function that gives what color should be generated
-	  based on a seed and an age. The seed is used to differentiate between
-	  separate particles (if you want randomness), and age is to have color
-	  based on the time in a lifespan (value from 0-1).
-	"""
+    An instance of it is one specific pattern.
+    shape - a string that gives information on which pattern to run
+      It can contain multiple words
+    param - a general-use variable to pass in a value for one of the shapes
+    lifespan - For particle shapes, it's how long each particle will exist
+      For whole shapes, it's how long a cycle is
+    spawn_inter - Time between each spawn of a particle
+      (accounts for delay between calls)
+    gen_color - A function that gives what color should be generated
+      based on a seed and an age. The seed is used to differentiate between
+      separate particles (if you want randomness), and age is to have color
+      based on the time in a lifespan (value from 0-1).
+    """
 
     def __init__(
         self, shape="point", param=None, lifespan=1, spawn_inter=0.1, gen_color=None
