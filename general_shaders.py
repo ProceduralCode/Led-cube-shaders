@@ -42,6 +42,9 @@ def gradient_char(value):
 def print_screen(screen, method="ascii", wait_for_key=True):
     if method == "rgbmatrix":
         image = Image.new("RGB", (192, 128))
+		# TODO: Put the pixels into image
+		matrix.Clear()
+		matrix.SetImage(image)
     elif method == "ascii":
         for row in reversed(screen):
             for val in row:
