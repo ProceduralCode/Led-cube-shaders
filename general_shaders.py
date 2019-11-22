@@ -168,7 +168,7 @@ class Shader:
     def clear_sides(self):
         # Screen panels
         #   Side order: (left, front, right, back, top, bot)
-        self.sides = [np.zeros((64, 64, 3)) for _ in range(6)]
+        self.sides = np.zeros((6, 64, 64, 3))
 
     # Get a cardinal direction (in 0-3 rotation form) based on x/y +/- direction
     def get_card(self, x_drc, y_drc):
@@ -324,14 +324,20 @@ class Shader:
                 if side in (2, 3, 5):
                     nage = (age + 0.5) % 1
 
-                def nonce_func_1():
-                    potential_ages = [(nage + d/128) % 1 for d in range(128)]
-                    colors = [self.gen_color(0, a) for a in potential_ages]
-                    for a in range(64):
-                        for b in range(64):
-                            na, nb = self.get_coord(a, b, rot)
-                            self.sides[side][na][nb] = colors[a+b]
-                nonce_func_1()
+                potential_ages = [(nage + d/128) % 1 for d in range(128)]
+                potential_colors = np.array([self.gen_color(0, a) for a in potential_ages])
+                if rot == 0:
+                    dists = np.sum(np.mgrid[0:64, 0:64], axis=0)
+                if rot == 1:
+                    dists = np.sum(np.mgrid[0:64, 0:64][:, ::-1], axis=0)
+                if rot == 2:
+                    dists = np.sum(np.mgrid[0:64, 0:64][::-1, ::-1], axis=0)
+                if rot == 3:
+                    dists = np.sum(np.mgrid[0:64, 0:64][::-1, :], axis=0)
+
+                self.sides[side] = potential_colors[dists]
+
+
 
         # Accidental version of 'wave' that doesn't reset a variable after each loop
         #   (and creates crazy patterns)
