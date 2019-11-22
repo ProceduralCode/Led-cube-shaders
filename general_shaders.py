@@ -323,11 +323,15 @@ class Shader:
                 nage = age
                 if side in (2, 3, 5):
                     nage = (age + 0.5) % 1
-                for a in range(64):
-                    for b in range(64):
-                        nnage = (nage + (a + b) / 128) % 1
-                        na, nb = self.get_coord(a, b, rot)
-                        self.sides[side][na][nb] = self.gen_color(0, nnage)
+
+                def nonce_func_1():
+                    potential_ages = [(nage + d/128) % 1 for d in range(128)]
+                    colors = [self.gen_color(0, a) for a in potential_ages]
+                    for a in range(64):
+                        for b in range(64):
+                            na, nb = self.get_coord(a, b, rot)
+                            self.sides[side][na][nb] = colors[a+b]
+                nonce_func_1()
 
         # Accidental version of 'wave' that doesn't reset a variable after each loop
         #   (and creates crazy patterns)
@@ -463,12 +467,12 @@ def emersons_favorites(name="green_stars"):
         )
         # return Shader(shape = 'particle streak', param = 10, lifespan = 1, spawn_inter = 0.01, gen_color = gen_color)
     elif name == "night_light":
-
         def gen_color(seed, age):
             global warmness
             global intensity
             c1 = [0.8 - warmness * 0.2, 0.8, 0.8 + warmness * 0.2]
             # co = [c1[i] * (0.8 + abs(age - 0.5) * 0.4) * intensity for i in range(3)]
+            # TODO: Optimize this
             co = [c1[i] * (0.8 + smooth_osc(age) * 0.2) * intensity for i in range(3)]
             return co
 
@@ -490,7 +494,8 @@ def main():
     matrix = RGBMatrix(options = options)
 
 
-    shader = emersons_favorites("green_stars")
+    # shader = emersons_favorites("green_stars")
+    shader = emersons_favorites("night_light")
 
     # Make a custom color based on age (0-1)
     #   I have a lot of 'preset' ones as comments in there too that you can try out.
@@ -505,13 +510,14 @@ def main():
     # Loop to display screen (press q to close it)
     ret_char = None
     last_time = time.time()
-    while ret_char != "q":
+    iterations = 0
+    while ret_char != "q" and iterations<10:
         # Here you can set global variables
         #   for some shaders to be controlled 'remotely'
         global warmness
         global intensity
-        # warmness = abs((time.time() % 5) / 5 * 4 - 2) - 1
-        warmness = 0.5
+        warmness = abs((time.time() % 5) / 5 * 4 - 2) - 1
+        # warmness = 0.5
         intensity = 0.4
 
         screen = np.full((64 * 3, 64 * 4, 3), 0.1)
@@ -521,6 +527,7 @@ def main():
 
         print("\r" + str(time.time() - last_time), end="")
         last_time = time.time()
+        iterations += 1
 
 
 if __name__ == "__main__":
