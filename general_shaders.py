@@ -58,12 +58,9 @@ def gradient_char(value):
 
 def print_screen(screen, method="rgbmatrix", wait_for_key=True, matrix=None):
     if method == "rgbmatrix":
-
         image = (map_to_cube(screen) * 256).astype(np.uint8)
-        print(image.shape)
         image = Image.fromarray(image, mode="RGB")
 
-        matrix.Clear()
         matrix.SetImage(image, 0, 0)
     elif method == "ascii":
         for row in reversed(screen):
@@ -496,12 +493,15 @@ def main():
     options.chain_length = 1
     options.parallel = 3
     options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
+    options.pwm_lsb_nanoseconds = 130
+
 
     matrix = RGBMatrix(options = options)
 
 
     # shader = emersons_favorites("green_stars")
-    shader = emersons_favorites("night_light")
+    shader = emersons_favorites("rainbow_sparkles")
+    # shader = emersons_favorites("night_light")
 
     # Make a custom color based on age (0-1)
     #   I have a lot of 'preset' ones as comments in there too that you can try out.
@@ -516,8 +516,7 @@ def main():
     # Loop to display screen (press q to close it)
     ret_char = None
     last_time = time.time()
-    iterations = 0
-    while ret_char != "q" and iterations<10:
+    while ret_char != "q":
         # Here you can set global variables
         #   for some shaders to be controlled 'remotely'
         global warmness
@@ -533,7 +532,7 @@ def main():
 
         print("\r" + str(time.time() - last_time), end="")
         last_time = time.time()
-        iterations += 1
+
 
 
 if __name__ == "__main__":
