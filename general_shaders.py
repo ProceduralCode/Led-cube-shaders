@@ -38,14 +38,22 @@ def smooth_step(x):
 def map_to_cube(screen):
     """
     Map a cross-shaped screen to a 2x3 rectangle
+    Orientation names assume you're looking at the front panel
     """
     out = np.zeros((192, 128, 3))
-    out[0:64, 0:64] = screen[64:128, 0:64]
-    out[0:64, 64:128] = screen[0:64, 64:128]
-    out[64:128, 0:64] = screen[64:128, 64:128]
-    out[64:128, 64:128] = screen[128:192, 64:128]
-    out[128:192, 0:64] = screen[64:128, 128:192]
-    out[128:192, 64:128] = screen[64:128, 192:256]
+    out[0:64, 0:64] = screen[64:128, 0:64] # Top panel
+    out[0:64, 64:128] = screen[0:64, 64:128] # Front panel
+    out[64:128, 0:64] = screen[64:128, 64:128] # Right panel
+    out[64:128, 64:128] = screen[128:192, 64:128] # Back panel
+    out[128:192, 0:64] = screen[64:128, 128:192] # Bottom panel
+    out[128:192, 64:128] = screen[64:128, 192:256] # Left panel
+
+    out[0, 0, :] = 0
+    out[0, 64, :] = 0
+    out[64, 0, :] = 0
+    out[64, 64, :] = 0
+    out[128, 0, :] = 0
+    out[128, 64, :] = 0
 
     return out
 
@@ -493,15 +501,15 @@ def main():
     options.chain_length = 1
     options.parallel = 3
     options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
-    options.pwm_lsb_nanoseconds = 130
+    options.pwm_lsb_nanoseconds = 60
 
 
     matrix = RGBMatrix(options = options)
 
 
     # shader = emersons_favorites("green_stars")
-    shader = emersons_favorites("rainbow_sparkles")
-    # shader = emersons_favorites("night_light")
+    # shader = emersons_favorites("rainbow_sparkles")
+    shader = emersons_favorites("night_light")
 
     # Make a custom color based on age (0-1)
     #   I have a lot of 'preset' ones as comments in there too that you can try out.
@@ -521,7 +529,8 @@ def main():
         #   for some shaders to be controlled 'remotely'
         global warmness
         global intensity
-        warmness = abs((time.time() % 5) / 5 * 4 - 2) - 1
+        # warmness = abs((time.time() % 5) / 5 * 4 - 2) - 2
+        warmness = math.sin(time.time() * 1.3) - 1
         # warmness = 0.5
         intensity = 0.4
 
