@@ -41,19 +41,13 @@ def map_to_cube(screen):
     Orientation names assume you're looking at the front panel
     """
     out = np.zeros((192, 128, 3))
-    out[0:64, 0:64] = screen[64:128, 0:64] # Top panel
-    out[0:64, 64:128] = screen[0:64, 64:128] # Front panel
-    out[64:128, 0:64] = screen[64:128, 64:128] # Right panel
-    out[64:128, 64:128] = screen[128:192, 64:128] # Back panel
-    out[128:192, 0:64] = screen[64:128, 128:192] # Bottom panel
-    out[128:192, 64:128] = screen[64:128, 192:256] # Left panel
 
-    out[0, 0, :] = 0
-    out[0, 64, :] = 0
-    out[64, 0, :] = 0
-    out[64, 64, :] = 0
-    out[128, 0, :] = 0
-    out[128, 64, :] = 0
+    out[0:64, 0:64] = np.rot90(screen[64:128, 64:128], k=3)  # Top panel
+    out[0:64, 64:128] = np.rot90(screen[64:128, 128:192], k=2) # Front panel
+    out[64:128, 0:64] = np.rot90(screen[128:192, 64:128], k=3) # Right panel
+    out[64:128, 64:128] = np.rot90(screen[64:128, 0:64], k=3) # Back panel
+    out[128:192, 0:64] = np.rot90(screen[64:128, 192:256], k=3) # Botton panel
+    out[128:192, 64:128] = np.rot90(screen[0:64, 64:128], k=2) # Left panel
 
     return out
 
@@ -471,7 +465,7 @@ def emersons_favorites(name="green_stars"):
 
         return Shader(
             shape="particle streak",
-            param=10,
+            param=20,
             lifespan=5,
             spawn_inter=0.1,
             gen_color=gen_color,
@@ -507,9 +501,7 @@ def main():
     matrix = RGBMatrix(options = options)
 
 
-    # shader = emersons_favorites("green_stars")
-    # shader = emersons_favorites("rainbow_sparkles")
-    shader = emersons_favorites("night_light")
+    shader = emersons_favorites("green_streaks")
 
     # Make a custom color based on age (0-1)
     #   I have a lot of 'preset' ones as comments in there too that you can try out.
